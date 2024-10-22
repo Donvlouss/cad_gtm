@@ -1,5 +1,5 @@
-use f3l::glam::Vec3;
 use super::bspline_poles::BSplinePole;
+use f3l::glam::Vec3;
 
 pub fn de_boor(
     u: f32,
@@ -11,12 +11,12 @@ pub fn de_boor(
     let mut rs = poles.iter().copied().collect::<Vec<_>>();
 
     for i in 0..degree {
-        let mut rs_temp = vec![BSplinePole::default(); degree-i];
-        for j in 0..degree-i {
-            let a = ( u - knots[j+i] ) / ( knots[j+degree] - knots[j+i] );
-            rs_temp[j].pole = (1. - a) * rs[j].pole + a * rs[j+1].pole;
+        let mut rs_temp = vec![BSplinePole::default(); degree - i];
+        for j in 0..degree - i {
+            let a = (u - knots[j + i]) / (knots[j + degree] - knots[j + i]);
+            rs_temp[j].pole = (1. - a) * rs[j].pole + a * rs[j + 1].pole;
             if rational {
-                rs_temp[j].weight = (1. - a) * rs[j].weight + a * rs[j+1].weight;
+                rs_temp[j].weight = (1. - a) * rs[j].weight + a * rs[j + 1].weight;
             }
         }
         rs = rs_temp;
@@ -28,7 +28,13 @@ pub fn de_boor(
     }
 }
 
-pub fn compute_coefficients(u: f32, knots: &[f32], nb_poles: usize, degree: usize, n_extend: usize) -> Vec<f32> {
+pub fn compute_coefficients(
+    u: f32,
+    knots: &[f32],
+    nb_poles: usize,
+    degree: usize,
+    n_extend: usize,
+) -> Vec<f32> {
     (0..nb_poles)
         .map(|i| recursive_coe(u, &knots, degree, i, n_extend))
         .collect()

@@ -17,7 +17,7 @@ fn main() {
     window.set_light(Light::StickToCamera);
     window.set_point_size(10.0);
 
-    let white = Point3::new(1., 1., 1.,);
+    let white = Point3::new(1., 1., 1.);
     let green = Point3::new(0., 1., 0.);
     let data = gen_data();
     let bspline = approximation(&data);
@@ -26,13 +26,17 @@ fn main() {
     let upp_v = bspline.knots.knots[upper].value;
     let d = upp_v - low_v;
 
-    let ori = data.iter().map(|p| Point3::new(p.x, p.y, p.z)).collect::<Vec<_>>();
+    let ori = data
+        .iter()
+        .map(|p| Point3::new(p.x, p.y, p.z))
+        .collect::<Vec<_>>();
     let pts = (0..400)
         .map(|i| {
             let u = (i as f32) / 400f32 * d + low_v;
             let p = bspline.interop(u);
             Point3::new(p.x, p.y, p.z)
-        }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
 
     while window.render() {
         pts.iter().for_each(|pt| {
@@ -49,15 +53,16 @@ fn gen_data() -> Vec<Vec3> {
     let start = -2f32;
     let end = 2f32;
     let d = (end - start) / samples as f32;
-    (0..samples).map(|x| {
-        let x = x as f32 * d;
-        let y = x.sin();
-        Vec3::new(x, y, 0.)
-    }).collect::<Vec<_>>()
+    (0..samples)
+        .map(|x| {
+            let x = x as f32 * d;
+            let y = x.sin();
+            Vec3::new(x, y, 0.)
+        })
+        .collect::<Vec<_>>()
 }
 
 fn approximation(data: &[Vec3]) -> BSpline {
-
     let approx = BSplineApproximation {
         degree: 2,
         nb_poles: 9,

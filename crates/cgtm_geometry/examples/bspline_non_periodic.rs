@@ -16,7 +16,7 @@ fn main() {
     window.set_light(Light::StickToCamera);
     window.set_point_size(10.0);
 
-    let white = Point3::new(1., 1., 1.,);
+    let white = Point3::new(1., 1., 1.);
     let bspline = bspline_non_periodic();
     let (lower, upper) = (bspline.knots.lower, bspline.knots.upper);
     let low_v = bspline.knots.knots[lower].value;
@@ -27,7 +27,8 @@ fn main() {
             let u = (i as f32) / 100f32 * d + low_v;
             let p = bspline.interop(u);
             Point3::new(p.x, p.y, p.z)
-        }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
 
     while window.render() {
         pts.iter().for_each(|pt| {
@@ -66,36 +67,36 @@ fn bspline_non_periodic() -> BSpline {
 
     let poles = vec![
         BSplinePole {
-            pole: Vec3::new(0., 0., 0.,),
-            weight: 3.
+            pole: Vec3::new(0., 0., 0.),
+            weight: 3.,
         },
         BSplinePole {
-            pole: Vec3::new(0., 2., 0.,),
-            weight: 2.
+            pole: Vec3::new(0., 2., 0.),
+            weight: 2.,
         },
         BSplinePole {
-            pole: Vec3::new(1., 2., 0.,),
-            weight: 1.
+            pole: Vec3::new(1., 2., 0.),
+            weight: 1.,
         },
         BSplinePole {
-            pole: Vec3::new(3., 0., 0.,),
-            weight: 1.
+            pole: Vec3::new(3., 0., 0.),
+            weight: 1.,
         },
         BSplinePole {
-            pole: Vec3::new(4., 0., 0.,),
-            weight: 4.
+            pole: Vec3::new(4., 0., 0.),
+            weight: 4.,
         },
         BSplinePole {
-            pole: Vec3::new(4., 2., 0.,),
-            weight: 5.
+            pole: Vec3::new(4., 2., 0.),
+            weight: 5.,
         },
     ];
-    
+
     BSpline {
         degree,
         is_periodic,
         knots,
         poles,
-        use_rational: true
+        use_rational: true,
     }
 }

@@ -1,10 +1,9 @@
 use super::bspline_error::{BSplineError, BSplineKnotsGenError};
 
-
 #[derive(Debug, Clone)]
 pub enum BSplineKnotsAlgo {
     DeBoor(Vec<f32>), // parameter
-    Uniform(usize), // nb_poles
+    Uniform(usize),   // nb_poles
     Universal(usize), // nb_poles
 }
 
@@ -33,8 +32,12 @@ pub struct BSplineKnots {
 }
 
 impl BSplineKnots {
-    pub fn check(knots: &[BSplineKnot], degree: usize, nb_poles: usize, is_periodic: bool)
-    -> Result<(), BSplineError> {
+    pub fn check(
+        knots: &[BSplineKnot],
+        degree: usize,
+        nb_poles: usize,
+        is_periodic: bool,
+    ) -> Result<(), BSplineError> {
         let m = knots.len();
         if m < 2 {
             return Err(BSplineError::TooFewKnots);
@@ -161,17 +164,23 @@ impl BSplineKnots {
             extended[flatten.len() + split..].clone_from_slice(&extend[split..]);
             flatten = extended;
             split
-        } else { 0 };
+        } else {
+            0
+        };
         Ok(Self {
             knots,
             lower,
             upper,
             flatten,
-            n_extend
+            n_extend,
         })
     }
 
-    pub fn try_build(degree: usize, algo: &BSplineKnotsAlgo, feature: BSplineFeature) -> Result<BSplineKnots, BSplineKnotsGenError> {
+    pub fn try_build(
+        degree: usize,
+        algo: &BSplineKnotsAlgo,
+        feature: BSplineFeature,
+    ) -> Result<BSplineKnots, BSplineKnotsGenError> {
         match algo {
             BSplineKnotsAlgo::DeBoor(vec) => new_de_boor(degree, vec, feature),
             BSplineKnotsAlgo::Uniform(nb_poles) => new_uniform(degree, *nb_poles, feature),
@@ -182,21 +191,28 @@ impl BSplineKnots {
 
 impl BSplineKnots {
     pub fn original_flatten(&self) -> Vec<f32> {
-        self.knots.iter()
-            .flat_map(|knot| {
-                vec![knot.value; knot.multiplicity]
-            }).collect()
+        self.knots
+            .iter()
+            .flat_map(|knot| vec![knot.value; knot.multiplicity])
+            .collect()
     }
 
-    pub fn get_knots_bounds(&self, knot_index: usize, degree: usize, is_periodic: bool) -> Vec<f32> {
+    pub fn get_knots_bounds(
+        &self,
+        knot_index: usize,
+        degree: usize,
+        is_periodic: bool,
+    ) -> Vec<f32> {
         let idx = self
             .knots
             .iter()
             .take(knot_index + 1)
             .map(|k| k.multiplicity)
             .sum::<usize>();
-        let idx = if is_periodic { idx } else {
-            idx.max(degree).min(self.flatten.len()-degree-1)
+        let idx = if is_periodic {
+            idx
+        } else {
+            idx.max(degree).min(self.flatten.len() - degree - 1)
         };
         let idx = idx + self.n_extend - 1;
         (idx - degree + 1..=idx + degree)
@@ -221,7 +237,8 @@ impl BSplineKnots {
             .iter()
             .take(u_id + 1)
             .map(|k| k.multiplicity)
-            .sum::<usize>() - 1;
+            .sum::<usize>()
+            - 1;
         idx + self.n_extend
     }
 
@@ -233,7 +250,11 @@ impl BSplineKnots {
     }
 }
 
-fn new_uniform(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Result<BSplineKnots, BSplineKnotsGenError> {
+fn new_uniform(
+    degree: usize,
+    nb_poles: usize,
+    feature: BSplineFeature,
+) -> Result<BSplineKnots, BSplineKnotsGenError> {
     let mut periodic = false;
     let mut total = degree + nb_poles + 1;
     let (first, last) = match feature {
@@ -241,11 +262,11 @@ fn new_uniform(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Resul
             periodic = true;
             total = 2 * nb_poles;
             (s, s)
-        },
+        }
         BSplineFeature::Regular => (degree, degree),
-        BSplineFeature::ClampStart => (degree+1, degree),
-        BSplineFeature::ClampEnd => (degree, degree+1),
-        BSplineFeature::ClampAll => (degree+1, degree+1),
+        BSplineFeature::ClampStart => (degree + 1, degree),
+        BSplineFeature::ClampEnd => (degree, degree + 1),
+        BSplineFeature::ClampAll => (degree + 1, degree + 1),
     };
     if total < first + last {
         return Err(BSplineKnotsGenError::TooFewPoles);
@@ -253,11 +274,20 @@ fn new_uniform(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Resul
     let mid = total - first - last;
     let d = 1. / (mid + 1) as f32;
 
-    let mut knots = vec![BSplineKnot { value: 0., multiplicity: first }];
+    let mut knots = vec![BSplineKnot {
+        value: 0.,
+        multiplicity: first,
+    }];
     for i in 0..mid {
-        knots.push(BSplineKnot { value: (i+1) as f32 * d, multiplicity: 1 });
+        knots.push(BSplineKnot {
+            value: (i + 1) as f32 * d,
+            multiplicity: 1,
+        });
     }
-    knots.push(BSplineKnot { value: 1., multiplicity: last });
+    knots.push(BSplineKnot {
+        value: 1.,
+        multiplicity: last,
+    });
 
     match BSplineKnots::try_new(knots, degree, nb_poles, periodic) {
         Ok(knots) => Ok(knots),
@@ -265,7 +295,11 @@ fn new_uniform(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Resul
     }
 }
 
-fn new_universal(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Result<BSplineKnots, BSplineKnotsGenError> {
+fn new_universal(
+    degree: usize,
+    nb_poles: usize,
+    feature: BSplineFeature,
+) -> Result<BSplineKnots, BSplineKnotsGenError> {
     let mut periodic = false;
     let mut total = degree + nb_poles + 1;
     let (first, last) = match feature {
@@ -273,22 +307,31 @@ fn new_universal(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Res
             periodic = true;
             total = 2 * nb_poles;
             (s, s)
-        },
+        }
         BSplineFeature::Regular => (degree, degree),
-        BSplineFeature::ClampStart => (degree+1, degree),
-        BSplineFeature::ClampEnd => (degree, degree+1),
-        BSplineFeature::ClampAll => (degree+1, degree+1),
+        BSplineFeature::ClampStart => (degree + 1, degree),
+        BSplineFeature::ClampEnd => (degree, degree + 1),
+        BSplineFeature::ClampAll => (degree + 1, degree + 1),
     };
     if total < first + last {
         return Err(BSplineKnotsGenError::TooFewPoles);
     }
     let mid = total - first - last;
     let factor = (nb_poles + 1 - degree) as f32;
-    let mut knots = vec![BSplineKnot { value: 0., multiplicity: first }];
+    let mut knots = vec![BSplineKnot {
+        value: 0.,
+        multiplicity: first,
+    }];
     for i in 0..mid {
-        knots.push(BSplineKnot { value: (i+1) as f32 / factor, multiplicity: 1 });
+        knots.push(BSplineKnot {
+            value: (i + 1) as f32 / factor,
+            multiplicity: 1,
+        });
     }
-    knots.push(BSplineKnot { value: 1., multiplicity: last });
+    knots.push(BSplineKnot {
+        value: 1.,
+        multiplicity: last,
+    });
 
     match BSplineKnots::try_new(knots, degree, nb_poles, periodic) {
         Ok(knots) => Ok(knots),
@@ -299,8 +342,8 @@ fn new_universal(degree: usize, nb_poles: usize, feature: BSplineFeature) -> Res
 pub fn new_de_boor(
     _degree: usize,
     _de_boor_param: &[f32],
-    _feature: BSplineFeature
-) -> Result<BSplineKnots, BSplineKnotsGenError>  {
+    _feature: BSplineFeature,
+) -> Result<BSplineKnots, BSplineKnotsGenError> {
     todo!()
 }
 

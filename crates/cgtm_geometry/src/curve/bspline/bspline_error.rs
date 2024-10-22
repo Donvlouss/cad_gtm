@@ -14,7 +14,6 @@ pub enum BSplineError {
     KnotsNumberNotMatch,
 }
 
-
 #[derive(Debug, Clone, Copy, Error)]
 pub enum BSplineKnotsGenError {
     #[error(transparent)]
@@ -30,4 +29,3 @@ pub enum BSplineApproximationError {
     #[error("Not allow to approximate periodic bspline.")]
     NotAllowPeriodic,
 }
-
