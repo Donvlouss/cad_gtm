@@ -1,0 +1,16 @@
+[package]
+name = "cgtm_geometry"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default=["app"]
+app = ["kiss3d"]
+
+[dependencies]
+f3l = { version = "0.3.0", default-features = false, features = ["core"]}
+nalgebra = "0.33.1"
+thiserror = "1.0.64"
+
+kiss3d = {version = "0.35.0", optional = true}

@@ -7,7 +7,7 @@ edition = "2021"
 
 [workspace]
 members = [
-    "crates/cgtm_geomerty",
+    "crates/cgtm_geometry",
     "crates/cgtm_topology"
 ]
 
