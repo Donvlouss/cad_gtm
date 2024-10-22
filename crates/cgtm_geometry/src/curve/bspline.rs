@@ -48,7 +48,7 @@ impl BSpline {
                 }
                 let mut p = self.poles[pi];
                 if self.use_rational {
-                    p.pole *= p.weight as f32;
+                    p.pole *= p.weight;
                 }
                 pi += 1;
                 p

@@ -8,7 +8,7 @@ pub fn de_boor(
     degree: usize,
     rational: bool,
 ) -> Vec3 {
-    let mut rs = poles.iter().copied().collect::<Vec<_>>();
+    let mut rs = poles.to_vec();
 
     for i in 0..degree {
         let mut rs_temp = vec![BSplinePole::default(); degree - i];
@@ -36,7 +36,7 @@ pub fn compute_coefficients(
     n_extend: usize,
 ) -> Vec<f32> {
     (0..nb_poles)
-        .map(|i| recursive_coe(u, &knots, degree, i, n_extend))
+        .map(|i| recursive_coe(u, knots, degree, i, n_extend))
         .collect()
 }
 

@@ -52,14 +52,12 @@ impl BSplineKnots {
             } else {
                 degree
             };
-            if !(knots[i].multiplicity <= max_multiplicity) {
+            if knots[i].multiplicity > max_multiplicity {
                 return Err(BSplineError::MultiplicityOverDegree);
             }
             // Knots should are increasing.
-            if i > 0 {
-                if knots[i].value <= knots[i - 1].value {
-                    return Err(BSplineError::MultiplicityOverDegree);
-                }
+            if i > 0 && knots[i].value <= knots[i - 1].value {
+                return Err(BSplineError::MultiplicityOverDegree);
             }
         }
         if is_periodic {
@@ -140,9 +138,7 @@ impl BSplineKnots {
         nb_poles: usize,
         is_periodic: bool,
     ) -> Result<Self, BSplineError> {
-        if let Err(e) = Self::check(&knots, degree, nb_poles, is_periodic) {
-            return Err(e);
-        }
+        Self::check(&knots, degree, nb_poles, is_periodic)?;
         let (lower, upper) = if is_periodic {
             (0, knots.len() - 1)
         } else {
