@@ -52,7 +52,7 @@ impl BSplineKnots {
             } else {
                 degree
             };
-            if knots[i].multiplicity > max_multiplicity {
+            if degree != 0 && knots[i].multiplicity > max_multiplicity {
                 return Err(BSplineError::MultiplicityOverDegree);
             }
             // Knots should are increasing.
@@ -243,6 +243,22 @@ impl BSplineKnots {
     }
     pub fn upper_value(&self) -> f32 {
         self.knots[self.upper].value
+    }
+
+    pub fn derivate(&self, degree: usize, nb_poles: usize, is_periodic: bool) -> Self {
+        let mut knots = self.knots.clone();
+        let n = knots.len()-1;
+        if knots[n].multiplicity != 1 {
+            knots[n].multiplicity -= 1;
+        } else {
+            knots.pop();
+        }
+        if knots[0].multiplicity != 1 {
+            knots[0].multiplicity -= 1;
+        } else {
+            knots.remove(0);
+        }
+        Self::try_new(knots, degree, nb_poles, is_periodic).unwrap()
     }
 }
 

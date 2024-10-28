@@ -85,4 +85,115 @@ impl BSpline {
             self.knots.n_extend,
         )
     }
+
+    pub fn derivate_n(&self, u:f32, d: usize) -> Vec3 {
+        if d == 0 {
+            return self.interop(u);
+        }
+
+        let mut knots = self.knots.clone();
+        let mut poles = self.poles.clone();
+        for deriv in 1..=d {
+            let p = self.degree - deriv + 1;
+
+            let flatten = knots.original_flatten();
+            let mut temp_poles = vec![];
+            for i in 0..poles.len()-1 {
+                let factor = flatten[i+p+1] - flatten[i+1];
+                let param = if factor==0f32 { 0f32 } else  { p as f32 / factor };
+                temp_poles.push(BSplinePole {
+                    pole: (poles[i+1].pole - poles[i].pole) * param,
+                    weight: (poles[i+1].weight - poles[i].weight) * param
+                });
+            }
+            poles = temp_poles;
+            
+            knots = knots.derivate(self.degree - deriv, self.poles.len()-deriv, self.is_periodic);
+        }
+
+        let bspline = BSpline {
+            degree: self.degree - d,
+            knots,
+            poles,
+            is_periodic: self.is_periodic,
+            use_rational: self.use_rational,
+        };
+        bspline.interop(u)
+    }
+}
+
+#[cfg(test)]
+mod test_bspline {
+    use bspline_knots::BSplineKnot;
+
+    use super::*;
+
+    #[test]
+    fn derivate_1() {
+        let poles = vec![
+            BSplinePole {
+                pole: Vec3::new(0., 0., 0.,),
+                weight: 1.
+            },
+            BSplinePole {
+                pole: Vec3::new(0., 2., 0.,),
+                weight: 1.
+            },
+            BSplinePole {
+                pole: Vec3::new(1., 2., 0.,),
+                weight: 1.
+            },
+            BSplinePole {
+                pole: Vec3::new(3., 0., 0.,),
+                weight: 1.
+            },
+            BSplinePole {
+                pole: Vec3::new(4., 0., 0.,),
+                weight: 1.
+            },
+            BSplinePole {
+                pole: Vec3::new(4., 2., 0.,),
+                weight: 1.
+            },
+        ];
+        let knots = vec![
+            BSplineKnot {
+                value: 0.,
+                multiplicity: 3
+            },
+            BSplineKnot {
+                value: 0.25,
+                multiplicity: 1
+            },
+            BSplineKnot {
+                value: 0.5,
+                multiplicity: 1
+            },
+            BSplineKnot {
+                value: 0.75,
+                multiplicity: 1
+            },
+            BSplineKnot {
+                value: 1.,
+                multiplicity: 3
+            },
+        ];
+        let bspline = BSpline {
+            degree: 2,
+            knots: BSplineKnots::try_new(knots, 2, poles.len(), false).unwrap(),
+            poles,
+            is_periodic: false,
+            use_rational: false,
+        };
+
+        let lower = bspline.lower_parameter();
+        let upper = bspline.upper_parameter();
+        let d = upper - lower;
+        let u = d * 0.5 + lower;
+
+        let p = bspline.derivate_n(u, 1);
+        assert_eq!(p, Vec3::new(8., -8., 0.));
+        let p = bspline.derivate_n(u, 2);
+        assert_eq!(p, Vec3::new(16., -32., 0.));
+    }
 }
